@@ -23,8 +23,6 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-# The agents here are extensions written by Simon Parsons, based on the code in
-# pacmanAgents.py
 
 from pacman import Directions
 from game import Agent
@@ -508,10 +506,10 @@ class ClassifierAgent(Agent):
 
     def __init_classifier__(self):
         #This trains the classifier on the dataset.
+        # Basic outline: train 20 trees, then do majority vote to determine the classification
         self.pruner = SelectKBest(chi2, 'all').fit(self.data, self.target)
         self.data = self.pruner.transform(self.data).tolist()
         self.trees = self.gen_trees()
-        #I want to train TWENTY trees, and then do majority vote on all of them in order to determine classifications.
 
     def move_from_trees(self, features):
         """ Gets classification for the row of features from the decision trees"""
@@ -523,8 +521,9 @@ class ClassifierAgent(Agent):
 
     def classify(self, features, legal):
         features = self.pruner.transform([features])[0].tolist()
-        """Get classification from each tree, then do majority vote or something like that.
-        If it's not a legal move, then do it a number of times until we get a legal move,
+        """Get classification from each tree, then do majority vote.
+        If the classification is not a legal move, then this is repeated a number of times
+        to try and get a legal move, otherwise a random legal move is returned
         otherwise just return a legal move."""
         print features
         move = self.move_from_trees(features)
@@ -551,32 +550,17 @@ class ClassifierAgent(Agent):
         #
         # *********************************************
 
-    # Turn the numbers from the feature set into actions:
-
-
-    # Here we just run the classifier to decide what to do
     def getAction(self, state):
 
         # How we access the features.
         features = api.getFeatureVector(state)
         
 
-        # *****************************************************
-        #
-        # Here you should insert code to call the classifier to
-        # decide what to do based on features and use it to decide
-        # what action to take.
-        #
-        # *******************************************************
-
-        # Get the actions we can try.
+        # Get the legal moves we can try.
         legal = api.legalActions(state)
 
         move = self.classify(features, legal)
-        # getAction has to return a move. Here we pass "STOP" to the
-        # API to ask Pacman to stay where they are. We need to pass
-        # the set of legal moves to teh API so it can do some safety
-        # checking.
+        
         return api.makeMove(move, legal)
 
     

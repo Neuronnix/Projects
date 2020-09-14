@@ -515,7 +515,7 @@ class ClassifierAgent(Agent):
 
     def move_from_trees(self, features):
         """ Gets classification for the row of features from the decision trees"""
-        print "move_from_trees"
+        # print "move_from_trees"
         moves = map(lambda t: t.predict(features), self.trees)
         return max(set(moves), key=moves.count)
 
@@ -526,9 +526,9 @@ class ClassifierAgent(Agent):
         """Get classification from each tree, then do majority vote or something like that.
         If it's not a legal move, then do it a number of times until we get a legal move,
         otherwise just return a legal move."""
-        print features
+        # print features
         move = self.move_from_trees(features)
-        print "move is {}".format(move)
+        # print "move is {}".format(move)
         i = 0
         while self.convertNumberToMove(move) not in legal:
             if i > 20:

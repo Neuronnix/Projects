@@ -1,14 +1,31 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <string>
+#include <iostream>
+#include <fstream>
 
 #include "gameplay.hpp"
+
+Game::Game(std::string dict_name)
+    : dict(dict_name)
+    , word(dict.random_word())
+    , guess(word.length(), '-')
+    , letters_guessed{}
+    , guesses_left(MAX_GUESSES)
+    , head(nullptr)
+    , has_next_turn(nullptr)
+    , 
+{
+
+
+
+}
 
 /* Return a status message that shows the current state of the game.
  * Assumes that the caller has allocated MAX_MSG bytes for msg.
  */
-std::string status_message(std::string msg, Game &game) {
+std::string Game::status_message(std::string msg, Game &game) {
     sprintf(msg, "***************\r\n"
            "Word to guess: %s\r\nGuesses remaining: %d\r\n"
            "Letters guessed: \r\n", game->guess, game->guesses_left);
@@ -34,7 +51,7 @@ std::string status_message(std::string msg, Game &game) {
  * different values when we use init_game to create a new game after one
  * has already been played
  */
-void init_game(Game &game, char *dict_name) {
+void Game::init_game(Game &game, std::string dict_name) {
     char buf[MAX_WORD];
     if(game->dict.fp != NULL) {
         rewind(game->dict.fp);
@@ -78,19 +95,13 @@ void init_game(Game &game, char *dict_name) {
 
 /* Return the number of lines in the file
  */
-int get_file_length(char *filename) {
-    char buf[MAX_MSG];
+int Game::get_file_length(std::string filename) {
     int count = 0;
-    FILE *fp;
-    if((fp = fopen(filename, "r")) == NULL) {
-        perror("open");
-        exit(1);
+    ifstream in(filename);
+
+    for (std::string line; std::getline(in, line); )
+    {
+        ++count;
     }
-    
-    while(fgets(buf, MAX_MSG, fp) != NULL) {
-        count++;
-    }
-    
-    fclose(fp);
     return count;
 }

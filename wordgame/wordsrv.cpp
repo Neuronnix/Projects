@@ -16,6 +16,10 @@
 #include "socket.hpp"
 #include "gameplay.hpp"
 
+using std::cin;
+using std::cout;
+using std::cerr;
+using std::endl;
 
 #ifndef PORT
     #define PORT 59531
@@ -151,11 +155,16 @@ void remove_player(struct client **top, int fd) {
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, const char **argv) {
     int clientfd, maxfd, nready;
     struct client *p;
     struct sockaddr_in q;
     fd_set rset;
+
+    if(argc != 2) {
+        cerr << "Usage:" << argv[0] << "<dictionary filename>";
+        exit(EXIT_FAILURE);
+    }
 
     //Setting up signal handler for SIGPIPE why?
     struct sigaction sa;
@@ -166,11 +175,7 @@ int main(int argc, char **argv) {
       perror("sigaction");
       exit(1);
     }
-    
-    if(argc != 2){
-        fprintf(stderr,"Usage: %s <dictionary filename>\n", argv[0]);
-        exit(1);
-    }
+
     
     srandom((unsigned int)time(NULL));
 
@@ -179,18 +184,21 @@ int main(int argc, char **argv) {
     ///////////////////////////////////////////////////////////
 
     // Create and initialize the game state
-    Game game(get_file_length(argv[1]));
+    // Init dictionary
+    //      Count lines in dictionary
+    //      Choose random word from dictionary
+    // Initialize game state with the word
+    //      Set guess to - 
+    //      Set game word to the word (reference) 
+    //      Initialize letters guessed array to 0s
+    //      Set guesses left
+    Game game(std::string(argv[1]));
     // Set up the file pointer outside of init_game because we want to 
     // just rewind the file when we need to pick a new word
-    game.dict.fp = NULL;
+    game.dict.fp = nullptr;
     game.dict.size = get_file_length(argv[1]);
 
     init_game(&game, argv[1]);
-    
-    // head and has_next_turn also don't change when a subsequent game is
-    // started so we initialize them here.
-    game.head = NULL;
-    game.has_next_turn = NULL;
     
     /* A list of client who have not yet entered their name.  This list is
      * kept separate from the list of active players in the game, because

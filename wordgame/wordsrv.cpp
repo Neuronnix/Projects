@@ -35,21 +35,21 @@ void remove_player(struct client **top, int fd);
  * you may find the helpful when thinking about operations in your program.
  */
 /* Send the message in outbuf to all clients */
-int broadcast(Game *game, char *outbuf);
+int broadcast(Game& game, char *outbuf);
 void announce_turn(Game *game);
 void announce_winner(Game *game, struct client *winner);
 /* Move the has_next_turn pointer to the next active client */
-void advance_disconnect(Game *game);
-void advance_turn(Game *game);
+void advance_disconnect(Game& game);
+void advance_turn(Game& game);
 
 //My helper functions.
-void notify_turn(Client *p, Game *game);
+void notify_turn(Client *p, Game& game);
 void invalid_guess(Client *p, Client **head);
 void msg_player(Client *p, Client **head, const char *msg);
 void notify_guess(Client *p, Client **head);
 int read_active(Client *p, Client **head);
-void status_to_client(Client *p, Game *game);
-void welcome_player(Client *p, Game *game);
+void status_to_client(Client *p, Game& game);
+void welcome_player(Client *p, Game& game);
 void notify_incorrect_name(Client *p, Client **new_players, const char *reason);
 int read_input(Client *p, int max_chars, const char *err_msg);
 int get_player_name(Client *p);
@@ -61,38 +61,40 @@ void remove_from_list(Client *p, Client **list);
 void add_player_to_game(Client *p, Client **new_players, Client **head, Client **next_turn);
 int is_valid_guess(char *guess);
 void not_your_turn(Client *p, Client **head);
-void announce_guess(Client *p, Game *game);
+void announce_guess(Client *p, Game& game);
 /* The set of socket descriptors for select to monitor.
  * This is a global variable because we need to remove socket descriptors
  * from allset when a write to a socket fails.
  */
+
+//So basically this is global because of the bad design of how we are doing it when socket reads fail
 fd_set allset;
 
 
 
-void advance_disconnect(Game *game)
+void advance_disconnect(Game& game)
 {
-    if (game->has_next_turn == NULL)
+    if (game.has_next_turn == NULL)
     {
         advance_turn(game);
     }
 }
 
-void advance_turn(Game *game)
+void advance_turn(Game& game)
 {
-    game->has_next_turn = game->head;
+    game.has_next_turn = game.head;
 }
 
-void status_to_client(Client *p, Game *game)
+void status_to_client(Client *p, Game& game)
 {
     //Function that sends status message to a single client.
     char msg[MAX_MSG];
-    msg_player(p, &game->head, status_message(msg, game));
+    msg_player(p, &(game.head), game.status_message(msg));
 }
 
-int broadcast(Game *game, char *outbuf)
+int broadcast(Game& game, char *outbuf)
 {
-    Client *p = game->head;
+    Client *p = game.head;
     for ( ; p; p = p->next)
     {
         //Broadcast here;
@@ -101,7 +103,7 @@ int broadcast(Game *game, char *outbuf)
             //Error writing to client.
             fprintf(stderr, "Broadcast to client %s failed\r\n", inet_ntoa(p->ipaddr));
             advance_disconnect(game);
-            remove_player(&game->head, p->fd);
+            remove_player(&(game.head), p->fd);
             return -1;
             //Figure out how to finish broadcasting to rest of the players
             //that are still here without repeating messages.
@@ -162,7 +164,7 @@ int main(int argc, const char **argv) {
     fd_set rset;
 
     if(argc != 2) {
-        cerr << "Usage:" << argv[0] << "<dictionary filename>";
+        cerr << "Usage:" << argv[0] << "<dictionary filename>" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -192,13 +194,8 @@ int main(int argc, const char **argv) {
     //      Set game word to the word (reference) 
     //      Initialize letters guessed array to 0s
     //      Set guesses left
-    Game game(std::string(argv[1]));
-    // Set up the file pointer outside of init_game because we want to 
-    // just rewind the file when we need to pick a new word
-    game.dict.fp = nullptr;
-    game.dict.size = get_file_length(argv[1]);
-
-    init_game(&game, argv[1]);
+    // std::string dict_name = std::string(argv[1]);
+    Game game((std::string(argv[1])));
     
     /* A list of client who have not yet entered their name.  This list is
      * kept separate from the list of active players in the game, because
@@ -265,7 +262,7 @@ int main(int argc, const char **argv) {
                     if(cur_fd == p->fd) {
                         //TODO - handle input from an active client
                         //Read in the input.
-                        int err = read_active(p, &game.head);
+                        int err = read_active(p, &(game.head));
                         if (err)
                         {
                             if (err < 0)
@@ -273,7 +270,7 @@ int main(int argc, const char **argv) {
                                 //If player disconnected, advance turn if it was
                                 //their turn.
                                 
-                                advance_disconnect(&game);
+                                advance_disconnect(game);
                             }
                             break;
                         }
@@ -285,18 +282,18 @@ int main(int argc, const char **argv) {
                             // player_guess(p, &game);
                             if (!is_valid_guess(p->inbuf))
                             {
-                                invalid_guess(p, &game.head);
+                                invalid_guess(p, &(game.head));
                                 if (p->fd < 0)
                                 {
-                                    advance_disconnect(&game);
+                                    advance_disconnect(game);
                                 }
                                 break;
                             }
-                            announce_guess(p, &game);
+                            announce_guess(p, game);
                         }
                         else
                         {
-                            not_your_turn(p, &game.head);
+                            not_your_turn(p, &(game.head));
                             break;
                         }
                     }
@@ -345,7 +342,7 @@ int main(int argc, const char **argv) {
                             strcpy(p->name, name);
                             memset(p->inbuf, 0, MAX_BUF);
                             add_player_to_game(p, &new_players, &game.head, &game.has_next_turn);
-                            welcome_player(p, &game);
+                            welcome_player(p, game);
                             //broadcast just joined and send status message
                             //to player.
 
@@ -407,7 +404,7 @@ int read_active(Client *p, Client **head)
 
 //Welcome player p to game.
 //Broadcast their name and tell them the game status.
-void welcome_player(Client *p, Game *game)
+void welcome_player(Client *p, Game& game)
 {
     char msg[MAX_MSG];
     strcpy(msg, p->name);
@@ -415,8 +412,8 @@ void welcome_player(Client *p, Game *game)
     printf("%s\n", msg);
     status_to_client(p, game);
 
-    notify_guess(game->has_next_turn, &game->head);
-    if (p != game->has_next_turn)
+    notify_guess(game.has_next_turn, &(game.head));
+    if (p != game.has_next_turn)
     {
         notify_turn(p, game);
     }
@@ -432,29 +429,31 @@ void notify_guess(Client *p, Client **head)
     msg_player(p, head, "Your guess?");
 }
 
-void announce_guess(Client *p, Game *game)
+void announce_guess(Client *p, Game& game)
 {
     char msg[MAX_MSG];
     sprintf(msg, "%s guessed %c", p->name, *p->inbuf);
     broadcast(game, msg);
 }
 
-void announce_turn(Game *game)
+void announce_turn(Game &game)
 {
     char msg[MAX_MSG];
-    sprintf(msg, "It's %s's turn.", game->has_next_turn->name);
+    sprintf(msg, "It's %s's turn.", game.has_next_turn->name);
     broadcast(game, msg);
 }
 
-void notify_turn(Client *p, Game *game)
+void notify_turn(Client *p, Game& game)
 {
     char msg[MAX_MSG];
-    sprintf(msg, "It's %s's turn.", game->has_next_turn->name);
-    msg_player(p, &game->head, msg);
+    sprintf(msg, "It's %s's turn.", game.has_next_turn->name);
+    msg_player(p, &(game.head), msg);
 }
 
 void msg_player(Client *p, Client **head, const char *msg)
 {
+    //Send message to the socket of the player.
+    //Something about checking if socket is closed
     if (dprintf(p->fd, "%s\r\n", msg) < 0)
     {
         fprintf(stderr, "[%d] Failed to msg client %s\nMessage: %s", p->fd, inet_ntoa(p->ipaddr), msg);

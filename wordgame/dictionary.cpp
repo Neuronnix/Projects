@@ -6,6 +6,10 @@
 
 #include "dictionary.hpp"
 
+using std::cout;
+using std::cin;
+using std::cerr;
+using std::endl;
 
 // dictionary::dictionary() : in(), size(0) {}
 
@@ -20,7 +24,6 @@ dictionary::dictionary(const std::string& dict_path)
 , rand_dev()
 , generator(rand_dev())
 , distr()
-,
 {
 	if (!in.is_open())
 	{
@@ -51,8 +54,10 @@ const std::string dictionary::random_word()
 	//Check in at beginning of file
 	assert(in.tellg() == 0);
 	const int index = distr(generator);
+	cout << "Looking for word at index " << index << endl;
 	std::string line;
-	for (int i = 0; std::getline(in, line) && i < index; ++i)
+	int i = 0;
+	for ( ; std::getline(in, line) && i < index; ++i)
 		{;}
 
 	if (i != index)
@@ -60,7 +65,7 @@ const std::string dictionary::random_word()
 		throw std::runtime_error("getline seemed to have failed before getting to index.");	
 	}
 	std::getline(in, line); //Get the word at the index.
-
+	cout << "Random word is " << line << endl;
 	rewind_fstream(); //reset ifstream to beginning
 
 	//return the word

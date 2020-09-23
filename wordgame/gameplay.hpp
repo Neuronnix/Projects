@@ -31,10 +31,9 @@ public:
 
     void init_game(Game &game, std::string dict_name);
     int get_file_length(std::string filename);
-    std::string status_message(std::string msg, Game &game);
+    const char* status_message(char *msg);
 
-    Game();
-    Game(std::string);
+    Game(const std::string&);
 };
 
 struct client {

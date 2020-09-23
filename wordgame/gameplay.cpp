@@ -7,7 +7,8 @@
 
 #include "gameplay.hpp"
 
-Game::Game(std::string dict_name)
+
+Game::Game(const std::string& dict_name)
     : dict(dict_name)
     , word(dict.random_word())
     , guess(word.length(), '-')
@@ -15,22 +16,19 @@ Game::Game(std::string dict_name)
     , guesses_left(MAX_GUESSES)
     , head(nullptr)
     , has_next_turn(nullptr)
-    , 
 {
-
-
 
 }
 
 /* Return a status message that shows the current state of the game.
  * Assumes that the caller has allocated MAX_MSG bytes for msg.
  */
-std::string Game::status_message(std::string msg, Game &game) {
+const char* Game::status_message(char *msg) {
     sprintf(msg, "***************\r\n"
            "Word to guess: %s\r\nGuesses remaining: %d\r\n"
-           "Letters guessed: \r\n", game->guess, game->guesses_left);
+           "Letters guessed: \r\n", guess.c_str(), guesses_left);
     for(int i = 0; i < 26; i++){
-        if(game->letters_guessed[i]) {
+        if(letters_guessed[i]) {
             int len = strlen(msg);
             msg[len] = (char)('a' + i);
             msg[len + 1] = ' ';
@@ -41,7 +39,7 @@ std::string Game::status_message(std::string msg, Game &game) {
     return msg;
 }
 
-
+#if 0
 /* Initialize the gameboard: 
  *    - initialize dictionary
  *    - select a random word to guess from the dictionary file
@@ -91,17 +89,4 @@ void Game::init_game(Game &game, std::string dict_name) {
     game->guesses_left = MAX_GUESSES;
 
 }
-
-
-/* Return the number of lines in the file
- */
-int Game::get_file_length(std::string filename) {
-    int count = 0;
-    ifstream in(filename);
-
-    for (std::string line; std::getline(in, line); )
-    {
-        ++count;
-    }
-    return count;
-}
+#endif

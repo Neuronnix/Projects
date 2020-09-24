@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "debug.hpp"
 #include "gameplay.hpp"
 
 

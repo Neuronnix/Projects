@@ -4,6 +4,7 @@
 #include <iostream>
 #include <random>
 
+#include "debug.hpp"
 #include "dictionary.hpp"
 
 using std::cout;

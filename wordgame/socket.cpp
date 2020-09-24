@@ -8,6 +8,7 @@
 
 #include <iostream>
 
+#include "debug.hpp"
 #include "socket.hpp"
 
 using std::endl;
@@ -18,7 +19,8 @@ using std::cout;
  */
 struct sockaddr_in& init_server_addr(int port) {
     struct sockaddr_in *addr = new sockaddr_in();
-
+    cout << "Initializing server" << endl;
+    cout << "Port is " << port << endl;
     // Allow sockets across machines.
     addr->sin_family = AF_INET;
 
@@ -83,15 +85,13 @@ int accept_connection(const int listenfd) {
     unsigned int peer_len = sizeof(peer);
     peer.sin_family = AF_INET;
 
-    cout << "Waiting for a new connection..." << endl;
-
     int client_socket = accept(listenfd, (struct sockaddr *)&peer, &peer_len);
     if (client_socket < 0) {
+        BUGF();
         perror("accept");
         exit(1);
     } else {
-        cout << "New connection accepted from" << 
-                inet_ntoa(peer.sin_addr) << ntohs(peer.sin_port);
+        LOG("New connection accepted from %s %d\n", inet_ntoa(peer.sin_addr), ntohs(peer.sin_port));
         return client_socket;
     }
 }

@@ -13,6 +13,7 @@
 #include <signal.h>
 #include <iostream>
 
+#include "debug.hpp"
 #include "socket.hpp"
 #include "gameplay.hpp"
 
@@ -122,7 +123,7 @@ void add_player(struct client **top, int fd, struct in_addr addr) {
         exit(1);
     }
 
-    printf("Adding client %s\n", inet_ntoa(addr));
+    cout << "Adding client " << inet_ntoa(addr) << endl;
 
     p->fd = fd;
     p->ipaddr = addr;
@@ -164,8 +165,7 @@ int main(int argc, const char **argv) {
     fd_set rset;
 
     if(argc != 2) {
-        cerr << "Usage:" << argv[0] << "<dictionary filename>" << endl;
-        exit(EXIT_FAILURE);
+        FATAL("Usage: %s <dictionary filename>\n", argv[0]);
     }
 
     //Setting up signal handler for SIGPIPE why?
@@ -181,20 +181,6 @@ int main(int argc, const char **argv) {
     
     srandom((unsigned int)time(NULL));
 
-    ///////////////////////////////////////////////////////////
-    // GAME SETUP
-    ///////////////////////////////////////////////////////////
-
-    // Create and initialize the game state
-    // Init dictionary
-    //      Count lines in dictionary
-    //      Choose random word from dictionary
-    // Initialize game state with the word
-    //      Set guess to - 
-    //      Set game word to the word (reference) 
-    //      Initialize letters guessed array to 0s
-    //      Set guesses left
-    // std::string dict_name = std::string(argv[1]);
     Game game((std::string(argv[1])));
     
     /* A list of client who have not yet entered their name.  This list is
@@ -216,7 +202,7 @@ int main(int argc, const char **argv) {
     maxfd = listenfd;
 
     while (1) {
-        // make a copy of the set before we pass it into select
+
         rset = allset; 
         nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
         if (nready == -1) {
@@ -224,8 +210,11 @@ int main(int argc, const char **argv) {
             continue;
         }
 
+        //Okay so basically we set up server listening on listenfd.
+        //We have done select and it has returned and so now we know we have
+        //a client.
         if (FD_ISSET(listenfd, &rset)){
-            cout << "A new client is connecting" << endl;
+            LOG("A new client is connecting\n");
             clientfd = accept_connection(listenfd);
 
             //Add clientfd to the set of FDs
@@ -233,16 +222,14 @@ int main(int argc, const char **argv) {
             if (clientfd > maxfd) {
                 maxfd = clientfd;
             }
-            cout << "Connection from" << inet_ntoa(q.sin_addr);
+            LOG("Connection from %s\n", inet_ntoa(q.sin_addr));
             //Add player to the head of the list of new players who haven't yet entered
             //their names
-            add_player(&new_players, clientfd, q.sin_addr);
-            char *greeting = WELCOME_MSG;
-            if(write(clientfd, greeting, strlen(greeting)) == -1) {
+
+            if(write(clientfd, WELCOME_MSG, strlen(WELCOME_MSG)) == -1) {
                 fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
-                //Undo previous call to add_player
-                remove_player(&new_players, clientfd);
             };
+            add_player(&new_players, clientfd, q.sin_addr);
         }
         
         /* Check which other socket descriptors have something ready to read.

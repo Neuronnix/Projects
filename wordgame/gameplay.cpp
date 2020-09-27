@@ -18,7 +18,7 @@ Game::Game(const std::string& dict_name)
     , head(nullptr)
     , has_next_turn(nullptr)
 {
-
+    
 }
 
 /* Return a status message that shows the current state of the game.

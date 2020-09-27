@@ -13,7 +13,15 @@
 - [ ] 
 
 # Finish implementing functionality
-- [ ] 
+
+- [ ] Do basic outline
+    - [ ] Set up listening on server
+    - [ ] Accept client connection
+        - [ ] Send welcome message
+    - [ ] Ask for name
+        - [ ] Wait for input kind of but go back to select in order to poll for other clients
+- [ ] Have client/player struct/class to keep track of the state of the client's socket, whether they're entering name or guessing, so can store what's going on and then loop around and continue, so that I/O doesn't hang for other clients.
 - [ ] If possible maybe change how FD stuff is read; may be different and cooler in C++
 - [ ] 
+- [ ]
 - [ ] 

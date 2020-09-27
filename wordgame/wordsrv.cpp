@@ -28,8 +28,8 @@ using std::endl;
 #define MAX_QUEUE 5
 
 
-void add_player(struct client **top, int fd, struct in_addr addr);
-void remove_player(struct client **top, int fd);
+void add_player(Client **top, int fd, struct in_addr addr);
+void remove_player(Client **top, int fd);
 
 /* These are some of the function prototypes that we used in our solution 
  * You are not required to write functions that match these prototypes, but
@@ -38,7 +38,7 @@ void remove_player(struct client **top, int fd);
 /* Send the message in outbuf to all clients */
 int broadcast(Game& game, char *outbuf);
 void announce_turn(Game *game);
-void announce_winner(Game *game, struct client *winner);
+void announce_winner(Game *game, Client *winner);
 /* Move the has_next_turn pointer to the next active client */
 void advance_disconnect(Game& game);
 void advance_turn(Game& game);
@@ -115,8 +115,9 @@ int broadcast(Game& game, char *outbuf)
 
 /* Add a client to the head of the linked list
  */
-void add_player(struct client **top, int fd, struct in_addr addr) {
-    Client *p = (Client*)malloc(sizeof(struct client));
+void add_player(Client **top, int& fd, struct in_addr& addr) 
+{
+    Client *p = (Client*)malloc(sizeof(Client));
 
     if (!p) {
         perror("malloc");
@@ -137,213 +138,95 @@ void add_player(struct client **top, int fd, struct in_addr addr) {
 /* Removes client from the linked list and closes its socket.
  * Also removes socket descriptor from allset 
  */
-void remove_player(struct client **top, int fd) {
-    struct client **p;
+void remove_player(Client **top, int fd) {
+    Client **p;
 
     for (p = top; *p && (*p)->fd != fd; p = &(*p)->next)
         ;
     // Now, p points to (1) top, or (2) a pointer to another client
     // This avoids a special case for removing the head of the list
     if (*p) {
-        struct client *t = (*p)->next;
+        Client *t = (*p)->next;
         printf("Removing client %d %s\n", fd, inet_ntoa((*p)->ipaddr));
         FD_CLR((*p)->fd, &allset);
         close((*p)->fd);
         free(*p);
         *p = t;
     } else {
-        fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n",
+        BUGF("Trying to remove fd %d, but I don't know about it\n",
                  fd);
     }
 }
 
+void setup_sighandler()
+{
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+
+    if(sigaction(SIGPIPE, &sa, NULL) == -1) 
+    {
+        BUGF();
+        perror("sigaction");
+        exit(1);
+    }
+}
 
 int main(int argc, const char **argv) {
-    int clientfd, maxfd, nready;
-    struct client *p;
-    struct sockaddr_in q;
-    fd_set rset;
+    int clientfd;
+    int nready;
+    Client *p;
 
+    //Check arguments are correct
     if(argc != 2) {
         FATAL("Usage: %s <dictionary filename>\n", argv[0]);
     }
 
     //Setting up signal handler for SIGPIPE why?
-    struct sigaction sa;
-    sa.sa_handler = SIG_IGN;
-    sa.sa_flags = 0;
-    sigemptyset(&sa.sa_mask);
-    if(sigaction(SIGPIPE, &sa, NULL) == -1) {
-      perror("sigaction");
-      exit(1);
-    }
 
+    setup_sighandler();
     
-    srandom((unsigned int)time(NULL));
-
     Game game((std::string(argv[1])));
-    
-    /* A list of client who have not yet entered their name.  This list is
-     * kept separate from the list of active players in the game, because
-     * until the new players have entered a name, they should not have a turn
-     * or receive broadcast messages.  In other words, they can't play until
-     * they have a name.
-     */
-    struct client *new_players = NULL;
-    
-    struct sockaddr_in &server = init_server_addr(PORT);
-    int listenfd = set_up_server_socket(server, MAX_QUEUE);
-    
-    // initialize allset and add listenfd to the
-    // set of file descriptors passed into select
-    FD_ZERO(&allset);
-    FD_SET(listenfd, &allset);
-    // maxfd identifies how far into the set to search
-    maxfd = listenfd;
 
-    while (1) {
+    Client *new_players = NULL;
 
-        rset = allset; 
-        nready = select(maxfd + 1, &rset, NULL, NULL, NULL);
+    //Initialize the server.
+    Server server(PORT, MAX_QUEUE);
+
+    while (true) {
+
+        //Do select
+        nready = server.select();
         if (nready == -1) {
             perror("select");
             continue;
         }
+        //
+        if (server.has_new_connection()){
 
-        //Okay so basically we set up server listening on listenfd.
-        //We have done select and it has returned and so now we know we have
-        //a client.
-        if (FD_ISSET(listenfd, &rset)){
-            LOG("A new client is connecting\n");
-            clientfd = accept_connection(listenfd);
+            //Accept new client and get the socket/fd for that client
+            struct sockaddr_in peer;
+            peer.sin_family = AF_INET;
+            clientfd = server.accept_connection(peer);
+            //welcome_message()
 
-            //Add clientfd to the set of FDs
-            FD_SET(clientfd, &allset);
-            if (clientfd > maxfd) {
-                maxfd = clientfd;
-            }
-            LOG("Connection from %s\n", inet_ntoa(q.sin_addr));
-            //Add player to the head of the list of new players who haven't yet entered
-            //their names
+            //Instantiate a player here with the clientfd.
 
             if(write(clientfd, WELCOME_MSG, strlen(WELCOME_MSG)) == -1) {
-                fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
+                BUGF(stderr, "Write to client %s failed\n", inet_ntoa(peer.sin_addr));
             };
-            add_player(&new_players, clientfd, q.sin_addr);
+            add_player(&new_players, clientfd, peer.sin_addr);
         }
-        
-        /* Check which other socket descriptors have something ready to read.
-         * The reason we iterate over the rset descriptors at the top level and
-         * search through the two lists of clients each time is that it is
-         * possible that a client will be removed in the middle of one of the
-         * operations. This is also why we call break after handling the input.
-         * If a client has been removed the loop variables may no longer be 
-         * valid.
-         */
+
         int cur_fd;
         for(cur_fd = 0; cur_fd <= maxfd; cur_fd++) {
             if(FD_ISSET(cur_fd, &rset)) {
                 // Check if this socket descriptor is an active player
                 
-                for(p = game.head; p != NULL; p = p->next) {
-                    if(cur_fd == p->fd) {
-                        //TODO - handle input from an active client
-                        //Read in the input.
-                        int err = read_active(p, &(game.head));
-                        if (err)
-                        {
-                            if (err < 0)
-                            {
-                                //If player disconnected, advance turn if it was
-                                //their turn.
-                                
-                                advance_disconnect(game);
-                            }
-                            break;
-                        }
+                //Check active players
 
-                        if (p == game.has_next_turn)
-                        {
-                            //Handle input
-                            // player_guess(Client *p, Game *game);
-                            // player_guess(p, &game);
-                            if (!is_valid_guess(p->inbuf))
-                            {
-                                invalid_guess(p, &(game.head));
-                                if (p->fd < 0)
-                                {
-                                    advance_disconnect(game);
-                                }
-                                break;
-                            }
-                            announce_guess(p, game);
-                        }
-                        else
-                        {
-                            not_your_turn(p, &(game.head));
-                            break;
-                        }
-                    }
-                }
-        
-                // Check if any new players are entering their names
-                for(p = new_players; p != NULL; p = p->next) {
-                    if(cur_fd == p->fd) {
-
-                        int ret = get_player_name(p);
-
-                        if (ret == -1)
-                        {
-                            fprintf(stderr, "Error reading client [%d] name\r\n", p->fd);
-                            remove_player(&new_players, p->fd);
-                            break;
-                        }
-                        else if (ret == 1)
-                        {
-                            printf("Invalid name: by client %s no network newline\n", inet_ntoa(p->ipaddr));
-                            notify_incorrect_name(p, &new_players, "No network newline");
-                            break;
-                        }
-                        else if (ret == -2)
-                        {
-                            fprintf(stderr, "[%d] EOF; client dc\n", p->fd);
-                            remove_player(&new_players, p->fd);
-                            break;
-                        }
-
-                        char *name = p->inbuf;
-
-                        if (strcmp(name, ""))
-                        {
-                            //Compare with names of all active players.
-                            Client *c = game.head;
-                            for ( ; c && strcmp(name, c->name); c = c->next)
-                                ;
-
-                            if (c)
-                            {
-                                notify_incorrect_name(p, &new_players, "Empty or in use");
-                                break;
-                            }
-                            //Valid name, add player to the game.
-                            strcpy(p->name, name);
-                            memset(p->inbuf, 0, MAX_BUF);
-                            add_player_to_game(p, &new_players, &game.head, &game.has_next_turn);
-                            welcome_player(p, game);
-                            //broadcast just joined and send status message
-                            //to player.
-
-                        }
-                        else
-                        {
-                            notify_incorrect_name(p, &new_players, "Empty or in use");
-                            break;
-                            //invalid name
-                        }
-
-                        break;
-                    } 
-                }
+                //Check new players
             }
         }
     }
@@ -484,7 +367,7 @@ void remove_from_list(Client *p, Client **list)
     if (*list)
     {
         //Hopefully this works lol I don't have a clue.
-        struct client *t = (*list)->next;
+        Client *t = (*list)->next;
         *list = t;
     }
 

@@ -17,6 +17,27 @@
 
 
 
+enum class ClientState
+{
+    new_player,
+    entering_name,
+    named,
+    guessing,
+    waiting_turn
+};
+
+class Client {
+public:
+    int fd;
+    ClientState state;
+    struct in_addr ipaddr;
+    Client *next;
+    char name[MAX_NAME];
+    char inbuf[MAX_BUF];  // Used to hold input from the client
+    char *in_ptr;         // A pointer into inbuf to help with partial reads
+};
+
+
 class Game {
 public:
     class dictionary dict;
@@ -26,8 +47,8 @@ public:
                                       // letter has been guessed; 0 otherwise
     int guesses_left;         // Number of guesses remaining
     
-    struct client *head;
-    struct client *has_next_turn;
+    Client *head;
+    Client *has_next_turn;
 
     void init_game(Game &game, std::string dict_name);
     int get_file_length(std::string filename);
@@ -36,14 +57,5 @@ public:
     Game(const std::string&);
 };
 
-struct client {
-    int fd;
-    struct in_addr ipaddr;
-    struct client *next;
-    char name[MAX_NAME];
-    char inbuf[MAX_BUF];  // Used to hold input from the client
-    char *in_ptr;         // A pointer into inbuf to help with partial reads
-};
-typedef struct client Client;
 
 #endif

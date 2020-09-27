@@ -28,7 +28,7 @@ using std::endl;
 #define MAX_QUEUE 5
 
 
-void add_player(Client **top, int fd, struct in_addr addr);
+void add_player(Client **top, int& fd, struct in_addr& addr);
 void remove_player(Client **top, int fd);
 
 /* These are some of the function prototypes that we used in our solution 
@@ -176,7 +176,6 @@ void setup_sighandler()
 int main(int argc, const char **argv) {
     int clientfd;
     int nready;
-    Client *p;
 
     //Check arguments are correct
     if(argc != 2) {
@@ -189,46 +188,43 @@ int main(int argc, const char **argv) {
     
     Game game((std::string(argv[1])));
 
-    Client *new_players = NULL;
+    Client *new_players = nullptr;
 
     //Initialize the server.
     Server server(PORT, MAX_QUEUE);
 
-    while (true) {
+    while (true) 
+    {
 
         //Do select
         nready = server.select();
-        if (nready == -1) {
+        if (nready == -1) 
+        {
             perror("select");
             continue;
         }
         //
-        if (server.has_new_connection()){
+        if (server.has_new_connection())
+        {
 
             //Accept new client and get the socket/fd for that client
             struct sockaddr_in peer;
             peer.sin_family = AF_INET;
             clientfd = server.accept_connection(peer);
+
+            // Client c = new Client(clientfd, peer);
             //welcome_message()
 
             //Instantiate a player here with the clientfd.
 
+
             if(write(clientfd, WELCOME_MSG, strlen(WELCOME_MSG)) == -1) {
-                BUGF(stderr, "Write to client %s failed\n", inet_ntoa(peer.sin_addr));
+                BUGF("Write to client %s failed\n", inet_ntoa(peer.sin_addr));
             };
             add_player(&new_players, clientfd, peer.sin_addr);
         }
 
-        int cur_fd;
-        for(cur_fd = 0; cur_fd <= maxfd; cur_fd++) {
-            if(FD_ISSET(cur_fd, &rset)) {
-                // Check if this socket descriptor is an active player
-                
-                //Check active players
-
-                //Check new players
-            }
-        }
+        //Loop through fds and check state of each client.
     }
     return 0;
 }

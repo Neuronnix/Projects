@@ -28,6 +28,9 @@ enum class ClientState
 
 class Client {
 public:
+
+    Client(const int& fd, const struct sockaddr_in& addr);
+    Client(const int& fd, const struct sockaddr_in& addr, const ClientState& state = ClientState::new_player);
     int fd;
     ClientState state;
     struct in_addr ipaddr;

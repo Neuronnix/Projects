@@ -1,10 +1,11 @@
 // #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <arpa/inet.h>     /* inet_ntoa */
 #include <netdb.h>         /* gethostname */
 #include <sys/socket.h>
+#include <sys/select.h>
+#include <unistd.h>
 
 #include <iostream>
 
@@ -31,7 +32,7 @@ Server::Server(int port, int max_queue)
 
 const int Server::select()
 {
-    return select(maxfd + 1, &selectfds, NULL, NULL, NULL);
+    return ::select(maxfd + 1, &selectfds, NULL, NULL, NULL);
 }
 
 
@@ -53,7 +54,7 @@ void Server::clr_fd(const int fd)
 
 void Server::zero_fd(const int fd)
 {
-    FD_ZERO(fd, &selectfds);
+    FD_ZERO(&selectfds);
 }
 
 /*

@@ -72,8 +72,7 @@ def convertToArray(numberString):
         return numberArray
 
 def get_data_from_file(file):
-        """Parameterized version of the registerInitialState function
-
+        """
         Gets move data from a named file, and returns them as a tuple of data and target
         """
         datafile = open(file, 'r')
@@ -98,6 +97,9 @@ def get_data_from_file(file):
 
         return data, target
 
+######################################################################################################################
+######################################################################################################################
+# Functions I used to test the classifier
 def run(test_size1=0.1, test_size2=0.2, k=10):
     trees = []
     trees2 = []
@@ -138,10 +140,14 @@ def do_all(k=10, t1=0.1, t2=0.2):
 
     return A, B
 
+######################################################################################################################
+######################################################################################################################
+
+
 class DTClassifier():
     """My own decision tree classifier class.
 
-    Loosely based on code from https://github.com/random-forests/tutorials/blob/master/decision_tree.py, however I have
+    Loosely based on code from https://github.com/random-forests/tutorials/blob/master/decision_tree.py, however I
     made my own modifications and improvements
     """
     def __init__(self, data=None, target=None):
@@ -254,7 +260,7 @@ class DTClassifier():
 
         Returns:
             left and right branches of the split data
-            """
+        """
 
         # print "Splitting dataset"
         # print np.array(labels)
@@ -425,9 +431,6 @@ class DTNode():
 
 
 
-
-
-
 class ClassifierAgent(Agent):
 
     # Constructor. This gets run when the agent starts up.
@@ -450,20 +453,6 @@ class ClassifierAgent(Agent):
             return Directions.SOUTH
         elif number == 3:
             return Directions.WEST
-
-    def convertToArray(self, numberString):
-        numberArray = []
-        for i in range(len(numberString) - 1):
-            if numberString[i] == '0':
-                numberArray.append(0)
-            elif numberString[i] == '1':
-                numberArray.append(1)
-            elif numberString[i] == '2':
-                numberArray.append(2)
-            elif numberString[i] == '3':
-                numberArray.append(3)
-
-        return numberArray
                 
     # This gets run on startup. Has access to state information.
     #
@@ -482,7 +471,7 @@ class ClassifierAgent(Agent):
         self.target = []
         # Turn content into nested lists
         for i in range(len(content)):
-            lineAsArray = self.convertToArray(content[i])
+            lineAsArray = convertToArray(content[i])
             dataline = []
             for j in range(len(lineAsArray) - 1):
                 dataline.append(lineAsArray[j])

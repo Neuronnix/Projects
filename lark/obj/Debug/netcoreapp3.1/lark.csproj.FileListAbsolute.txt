@@ -1,0 +1,13 @@
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.exe
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.deps.json
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.runtimeconfig.json
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.runtimeconfig.dev.json
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.dll
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\lark.pdb
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.csprojAssemblyReference.cache
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.AssemblyInfoInputs.cache
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.AssemblyInfo.cs
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.csproj.CoreCompileInputs.cache
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.dll
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.pdb
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.genruntimeconfig.cache

@@ -5,9 +5,7 @@
 
 ### Asynchronous Execution
 
-- [ ] Make execution of 
-- [ ]
-  - [ ]
+- [ ] Use async/await to make things faster (tentative)
 
 ---
 

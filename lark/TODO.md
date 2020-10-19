@@ -3,12 +3,6 @@
 
 ## Architecture and Program Design
 
-### Asynchronous Execution
-
-- [ ] Use async/await to make things faster (tentative)
-
----
-
 ## Shell Scripting
 
 ### Environment variables
@@ -71,6 +65,19 @@
 ---
 
 ### [cat - concatenate files and print on the standard output](https://man7.org/linux/man-pages/man1/cat.1.html "man cat")
+
+#### `cat` (No args)
+
+- [ ] Read from stdin (as with bash)
+
+#### `cat` [file]
+
+- [ ] Print contents of file.
+- [ ] Show error message if file doesn't exist
+
+#### `cat` [directory]
+
+- [ ] Show error message saying that cat doesn't work on directories.
 
 ---
 

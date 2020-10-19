@@ -11,3 +11,5 @@ C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.csproj.CoreCompile
 C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.dll
 C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.pdb
 C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.genruntimeconfig.cache
+C:\Users\Xtrem\git\Projects\lark\bin\Debug\netcoreapp3.1\CommandLine.dll
+C:\Users\Xtrem\git\Projects\lark\obj\Debug\netcoreapp3.1\lark.csproj.CopyComplete

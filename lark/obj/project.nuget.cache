@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "2BwC6EprT7FRTvQFqcHbFVCIjb87sJ3/yvKANy/wmWS81DrKN2NRrYLPAKbnflPdc5oM8zBEEB/0+GQ55QGUIA==",
+  "dgSpecHash": "iRyytGGBPJxhiQBHIwMslAJTGK35mu8TsSnHr+j6r5tIkJ6DsFwFQYV3KDz99FLQ8kw3fIpc/VvWVT7aVdQYAg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Xtrem\\git\\Projects\\lark\\lark.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Xtrem\\.nuget\\packages\\commandlineparser\\2.8.0\\commandlineparser.2.8.0.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -1,38 +1,55 @@
 using System;
 using System.Collections.Generic;
-using Command;
-using CatCommand;
 using System.Text.RegularExpressions;
-
-namespace ShellSpace
+using CommandLine;
+using static Main.Utils;
+namespace Main
 {
-  public class Shell
+  public class Shell : IBaseParser<ShellOptions>
   {
-    private string prompt {get;  set; }
-    private Dictionary<String, ICommand> Commands = new Dictionary<string, ICommand>
+    private string Prompt {get;  set; }
+    private Dictionary<String, Type> Commands = new Dictionary<string, Type>
     {
-      {"cat", new Cat()}
+      {"cat", typeof(Cat)}
     };
+    private Dictionary<String, String> Aliases;
+    private Dictionary<String, String> Env;
     
     public Shell(string[] args)
     {
-      WelcomeMessage();
-      ParseOpts(args);
+      // ((Shell)(this)).Parse(args);
+      ((IBaseParser<ShellOptions>)(this)).Parse(args);
+    }
+
+    public void ParseOpts(ShellOptions opts)
+    {
+      //do nothing yet no options to parse.
       InitShell();
+      WelcomeMessage();
       Run();
+      Terminate();
+    }
+
+    public void HandleParseError(IEnumerable<Error> errs)
+    {
+      //handle errors.
     }
 
     private void InitShell()
     {
       //Ideally you would want to read run commands
       //And maybe also read prompt from environment variabes.
-      prompt = ">";
-      //Populate Commands Dictionary?
+      Prompt = ">";
+    }
+
+    private void WelcomeMessage()
+    {
+      Console.WriteLine("Welcome to sh#, the C# interactive shell!");
     }
 
     private void PrintPrompt()
     {
-      Console.Write(prompt);
+      Console.Write(Prompt);
     }
     private void Run()
     {
@@ -43,6 +60,13 @@ namespace ShellSpace
         input = Console.ReadLine();
         Execute(input);
       } while (input != "exit");
+
+    }
+
+    private void Terminate()
+    {
+      //Do whatever needs to be done to shut down, release resources, close files or whatever.
+      Console.WriteLine("logout");
     }
 
     private void InvalidCommand(string cmd)
@@ -50,39 +74,38 @@ namespace ShellSpace
       Console.WriteLine($"sh#: {cmd}: Command not found.");
     }
     
-    private bool IsComment(string cmd)
-    {
-      return cmd[0] == '#';
-    }
-    
     private void Execute(string input)
     {
-      var result = (Regex.Match(input, @"^([\w\-]+)"));
-      string cmd = result.Value;
-      if (string.IsNullOrWhiteSpace(cmd) || IsComment(cmd))
+      string cmd = RemoveComment(input);
+      Type cmdType;
+      
+      //Now know that cmd is not comment. Split up args.
+      string[] args = cmd.Split(' ');
+      //cmd name is the first word.
+      string cmdName = args[0];
+      if (string.IsNullOrWhiteSpace(cmdName))
       {
         return;
       }
-      else if (Commands.ContainsKey(cmd))
+      else if (Commands.TryGetValue(cmdName, out cmdType))
       {
-        Commands[cmd].Run(input);
+        var cmdInstance = (IRunner)Activator.CreateInstance(cmdType);
+        cmdInstance.Run(args);
       }
       else
       {
-        InvalidCommand(cmd);
+        InvalidCommand(cmdName);
       }
-      //if input is a valid command
-      //Check if comment
+    }
+    
 
-    }
-    private void WelcomeMessage()
+    private void RunCommand(Type cmdType, string[] args)
     {
-      Console.WriteLine("Welcome to sh#, the C# interactive shell!");
+      Console.WriteLine("In Run Command");
+      dynamic cmdInstance = Activator.CreateInstance(cmdType);
+      cmdInstance.Run(args); //will this work?
     }
-    private void ParseOpts(string[] args)
-    {
-      //Parse command line options passed to the Shell.
-    }
+   
     public void Start()
     {
 

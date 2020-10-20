@@ -20,53 +20,58 @@ namespace Main
    
     public override void ParseOpts(CatOptions opts)
     {
-      //Command entry point
+      foreach (var filename in opts.Files)
+      {
+        if (filename == "-")
+        {
+          //Read from stdin and output. Pass opts as dependency
+          ReadFromStdIn();
+        }
+        else
+        {
+          PrintFile(filename, opts);
+        }
+      }
     }
 
     public override void HandleParseError(IEnumerable<Error> errs)
     {
       //Arrive here if parsing errors.
     }
-    private void PrintFile(string[] args)
+    private void PrintFile(string file, CatOptions opts)
     {
-      //Split comment and command.
-      if (args.Length < 2 || string.IsNullOrWhiteSpace(args[1]))
-      {
-        //could also read from stdin too.
-        Fail("no file name given.");
-        return;
-      }
+      // System.Console.WriteLine("==================================");
+      // System.Console.WriteLine($"printing {file}");
+      // System.Console.WriteLine("==================================");
 
-      string file = args[1];
-      
-      var lines = ReadFrom(file);
+      var lines = ReadLinesFromFile(file);
       foreach (var line in lines)
       {
+        //TODO: use opts here to check how to print.
         Console.Write(line);
-        if (!string.IsNullOrWhiteSpace(line))
-        {
-          var pause = Task.Delay(200);
-          pause.Wait();
-        }
       }
     }
 
-    private IEnumerable<string> ReadFrom(string file)
+    private IEnumerable<string> ReadLinesFromFile(string file)
     {
       string line;
       using (var reader = File.OpenText(file))
       {
         while ((line = reader.ReadLine()) != null)
         {
-          foreach (var word in line.Split(' '))
-          {
-            yield return word + " ";
-          }
-          yield return Environment.NewLine;
+          yield return line;
         }
       }
     }
 
+    private void ReadFromStdIn()
+    {
+      string input = null;
+      while ((input = Console.ReadLine()) != null)
+      {
+        Console.WriteLine(input);
+      }
+    }
     private void Fail(string msg)
     {
       Console.WriteLine($"{cmdname}: {msg}");

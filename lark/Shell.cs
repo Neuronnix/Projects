@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using CommandLine;
 using static Main.Utils;
@@ -54,12 +55,13 @@ namespace Main
     private void Run()
     {
       string input = null;
-      do
+      for ( ; ; )
       {
         PrintPrompt();
         input = Console.ReadLine();
+        if (input == "exit" || input == null) break;
         Execute(input);
-      } while (input != "exit");
+      }
 
     }
 
@@ -90,7 +92,8 @@ namespace Main
       else if (Commands.TryGetValue(cmdName, out cmdType))
       {
         var cmdInstance = (IRunner)Activator.CreateInstance(cmdType);
-        cmdInstance.Run(args);
+        //Use Skip to pass ignore the first word which is the command, so it doesn't get parsed.
+        cmdInstance.Run(args.Skip(1).ToArray());
       }
       else
       {

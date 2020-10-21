@@ -15,6 +15,7 @@ namespace Main
       string dir = opts.Directory;
       if (string.IsNullOrEmpty(dir))
       {
+        //If empty it should change to HOME directory.
         Fail($"No directory given");
       }
       else if (!Directory.Exists(dir))

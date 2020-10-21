@@ -9,15 +9,19 @@ namespace Main
     
     // public abstract void Run(string[] args);
     protected readonly string cmdname;
+    protected readonly Parser parser;
+    protected readonly IBaseParser<T> thisAsBaseParser;
 
     public Command(string cmdname)
     {
       this.cmdname = cmdname;
+      thisAsBaseParser = ((IBaseParser<T>)(this));
+      parser = new Parser(thisAsBaseParser.SetupParser);
     }
 
     public void Run(string[] args)
     {
-      ((IBaseParser<T>)(this)).Parse(args);
+      thisAsBaseParser.Parse(args, parser);
     }
 
     public abstract void ParseOpts(T opts);

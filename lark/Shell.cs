@@ -35,7 +35,6 @@ namespace Main
     
     public Shell(string[] args)
     {
-      // ((Shell)(this)).Parse(args);
       ((IBaseParser<ShellOptions>)(this)).Parse(args);
     }
 
@@ -101,34 +100,28 @@ namespace Main
     }
     
 
-    private string[] ParseCommand(string input)
+    private (string[], string) ParseCommand(string input)
     {
       //Remove comments and split into arguments
-      return RemoveComment(input).Split(' ');
+      var ret = RemoveComment(input).Split(' ');
+      return (ret, ret[0]);
     }
-    private void Execute(string input)
+
+    private void Execute(string input, bool aliased = false)
     {
-      string[] args = ParseCommand(input);
+      (string[] args, string cmdName) = ParseCommand(input);
       //cmd name is the first word.
-      string cmdName = args[0];
       if (string.IsNullOrWhiteSpace(cmdName))
       {
         return;
       }
+      else if (!aliased && Aliases.TryGetValue(cmdName, out string alias))
+      {
+        Execute(alias, true);
+      }
       else if (Commands.TryGetValue(cmdName, out Type cmdType))
       {
-        var cmdInstance = (IRunner)Activator.CreateInstance(cmdType);
-        //Use Skip to pass ignore the first word which is the command, so it doesn't get parsed.
-        cmdInstance.Run(args.Skip(1).ToArray());
-      }
-      else if (Aliases.TryGetValue(cmdName, out string alias))
-      {
-        System.Console.WriteLine($"Running alias {alias}");
-        //command is an alias instead. Run as command.
-        //TODO: Make quicker way to run alias, as using Execute will remove
-        //comments twice when comments already been removed. (unless 
-        //there's comments in the alias, but that wouldn't make sense anyway).
-        Execute(alias);
+        RunCommand(cmdType, args);
       }
       else
       {
@@ -139,14 +132,9 @@ namespace Main
 
     private void RunCommand(Type cmdType, string[] args)
     {
-      Console.WriteLine("In Run Command");
-      dynamic cmdInstance = Activator.CreateInstance(cmdType);
-      cmdInstance.Run(args); //will this work?
-    }
-   
-    public void Start()
-    {
-
+      var cmdInstance = (IRunner)Activator.CreateInstance(cmdType);
+      //Use Skip to ignore the first word which is the command, so it doesn't get parsed.
+      cmdInstance.Run(args.Skip(1).ToArray());
     }
   }
 }

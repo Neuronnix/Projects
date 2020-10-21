@@ -1,4 +1,4 @@
-# Multiplayer Word Guessing Game
+# Multiplayer Word Guessing Game -- _Work in Progress_
 
 An online hangman-type of game made using C++.
 

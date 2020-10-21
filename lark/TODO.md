@@ -55,8 +55,8 @@
 
 #### `cd [directory]`
 
-- [ ] Change to the given directory
-- [ ] Fail and give error message if directory doesn't exist
+- [x] Change to the given directory
+- [x] Fail and give error message if directory doesn't exist
 
 #### `cd -`
 
@@ -68,16 +68,16 @@
 
 #### `cat` (No args)
 
-- [ ] Read from stdin (as with bash)
+- [x] Read from stdin (as with bash)
 
 #### `cat` [file]
 
-- [ ] Print contents of file.
-- [ ] Show error message if file doesn't exist
+- [x] Print contents of file.
+- [x] Show error message if file doesn't exist
 
 #### `cat` [directory]
 
-- [ ] Show error message saying that cat doesn't work on directories.
+- [x] Show error message saying that cat doesn't work on directories.
 
 ---
 
@@ -98,4 +98,4 @@
 
 #### `pwd` (No args)
 
-- [ ] Print name of current working directory.
+- [x] Print name of current working directory.

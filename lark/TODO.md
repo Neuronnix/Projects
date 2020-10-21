@@ -70,12 +70,12 @@
 
 - [x] Read from stdin (as with bash)
 
-#### `cat` [file]
+#### `cat [file]`
 
 - [x] Print contents of file.
 - [x] Show error message if file doesn't exist
 
-#### `cat` [directory]
+#### `cat [directory]`
 
 - [x] Show error message saying that cat doesn't work on directories.
 

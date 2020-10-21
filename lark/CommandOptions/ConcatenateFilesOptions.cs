@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using CommandLine;
+using CommandOptions;
 
-namespace Cat
+namespace ConcatenateFiles
 {
-  class CatOptions
+  class ConcatenateFilesOptions : BaseOptions
   {
-    [Value(1, MetaName = "InputFiles", HelpText = "Files to concat and print out")]
+    [Value(0, MetaName = "InputFiles", HelpText = "Files to concat and print out")]
     public IEnumerable<string> Files {get; set; }
 
     [Option('E', "show-ends", Default = false, HelpText = "display $ at end of each line")]

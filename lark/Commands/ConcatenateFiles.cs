@@ -4,32 +4,47 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using static Main.Utils;
-using Cat;
+using ConcatenateFiles;
 using CommandLine;
+using System.Linq;
 
 namespace Main
 {
-  class Cat : Command<CatOptions>
+  class ConcatenateFiles : Command<ConcatenateFilesOptions>
   {
     //class for handling Cat.
     
-    public Cat() : base("cat")
+    public ConcatenateFiles() : base("cat")
     {
       
     }
    
-    public override void ParseOpts(CatOptions opts)
+    public override void ParseOpts(ConcatenateFilesOptions opts)
     {
+      if (!opts.Files.Any())
+      {
+        ReadFromStdIn();
+        return;
+      }
+
       foreach (var filename in opts.Files)
       {
         if (filename == "-")
         {
+          System.Console.WriteLine("hyphen");
           //Read from stdin and output. Pass opts as dependency
           ReadFromStdIn();
         }
         else
         {
-          PrintFile(filename, opts);
+          if (File.Exists(filename))
+          {
+            PrintFile(filename, opts);
+          }
+          else
+          {
+            Fail($"No such filename {filename}");
+          }
         }
       }
     }
@@ -38,7 +53,7 @@ namespace Main
     {
       //Arrive here if parsing errors.
     }
-    private void PrintFile(string file, CatOptions opts)
+    private void PrintFile(string file, ConcatenateFilesOptions opts)
     {
       // System.Console.WriteLine("==================================");
       // System.Console.WriteLine($"printing {file}");
@@ -48,7 +63,7 @@ namespace Main
       foreach (var line in lines)
       {
         //TODO: use opts here to check how to print.
-        Console.Write(line);
+        Console.WriteLine(line);
       }
     }
 

@@ -1,0 +1,5 @@
+cat Cat
+cls ClearScreen
+ls Ls
+pwd Pwd
+

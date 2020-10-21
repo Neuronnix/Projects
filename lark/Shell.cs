@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -59,6 +60,11 @@ namespace Main
       //Set prompt.
       //Also get command history
       Prompt = Env["PS1"];
+      var enVars = Environment.GetEnvironmentVariables();
+      foreach (DictionaryEntry de in enVars)
+      {
+        System.Console.WriteLine($"{de.Key}={de.Value}");
+      }
     }
 
     private void WelcomeMessage()

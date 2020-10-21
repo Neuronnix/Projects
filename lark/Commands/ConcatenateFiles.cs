@@ -41,9 +41,13 @@ namespace Main
           {
             PrintFile(filename, opts);
           }
+          else if (Directory.Exists(filename))
+          {
+            Fail($"{filename}: is a directory");
+          }
           else
           {
-            Fail($"No such filename {filename}");
+            Fail($"{filename}: No such file or directory");
           }
         }
       }
@@ -87,10 +91,7 @@ namespace Main
         Console.WriteLine(input);
       }
     }
-    private void Fail(string msg)
-    {
-      Console.WriteLine($"{cmdname}: {msg}");
-    }
+    
   
   }
 }

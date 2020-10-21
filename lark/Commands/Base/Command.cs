@@ -19,9 +19,13 @@ namespace Main
     {
       ((IBaseParser<T>)(this)).Parse(args);
     }
-    
 
     public abstract void ParseOpts(T opts);
     public abstract void HandleParseError(IEnumerable<Error> errs);
+
+    protected void Fail(string msg)
+    {
+      Console.WriteLine($"{cmdname}: {msg}");
+    }
   }
 }

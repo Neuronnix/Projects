@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+pacman/** linguist-vendored
+pacman/classifierAgents.py -linguist-vendored
